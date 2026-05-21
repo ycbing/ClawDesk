@@ -3,6 +3,8 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager,
 };
+use tauri_plugin_global_shortcut::GlobalShortcutExt;
+use tauri_plugin_shell::ShellExt;
 
 mod commands;
 
@@ -12,10 +14,10 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_global_shortcut::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::default().build())
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
-            // Global shortcut: Ctrl+Space (or Cmd+Space on macOS)
+            // Global shortcut: Cmd+Space on macOS, Ctrl+Space elsewhere
             let shortcut = if cfg!(target_os = "macos") {
                 "cmd+space"
             } else {
@@ -23,7 +25,7 @@ pub fn run() {
             };
 
             app.global_shortcut().on_shortcuts(shortcut, |_| {
-                // Toggle window visibility — handled per window below
+                // Window toggle handled by tray icon click
             })?;
 
             // System tray
@@ -38,8 +40,8 @@ pub fn run() {
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
                         if let Some(window) = app.get_webview_window("main") {
-                            window.show().unwrap();
-                            window.set_focus().unwrap();
+                            let _ = window.show();
+                            let _ = window.set_focus();
                         }
                     }
                     "quit" => {

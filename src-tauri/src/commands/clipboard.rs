@@ -6,7 +6,7 @@ pub async fn get_clipboard_text(app: tauri::AppHandle) -> Result<String, String>
     app.clipboard()
         .read_text()
         .map_err(|e| e.to_string())
-        .map(|opt| opt.unwrap_or_default())
+        .unwrap_or(Ok(String::new()))
 }
 
 #[command]

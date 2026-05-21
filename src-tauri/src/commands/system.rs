@@ -1,10 +1,8 @@
 use std::process::Command;
 use tauri::command;
-use tauri_plugin_shell::ShellExt;
 
 #[command]
 pub async fn execute_command(cmd: String) -> Result<String, String> {
-    // Parse command: handle "cd /path && ls" style
     let result = if cfg!(target_os = "windows") {
         Command::new("cmd")
             .args(["/C", &cmd])
@@ -38,8 +36,6 @@ pub async fn execute_command(cmd: String) -> Result<String, String> {
 }
 
 #[command]
-pub async fn open_url(app: tauri::AppHandle, url: String) -> Result<(), String> {
-    app.shell()
-        .open(&url, None::<&str>)
-        .map_err(|e| e.to_string())
+pub async fn open_url(url: String) -> Result<(), String> {
+    open::that(&url).map_err(|e| e.to_string())
 }
