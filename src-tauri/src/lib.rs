@@ -4,7 +4,7 @@ use tauri::{
     Manager,
 };
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
-use tauri_plugin_shell::ShellExt;
+
 
 mod commands;
 
@@ -24,7 +24,7 @@ pub fn run() {
                 "ctrl+space"
             };
 
-            app.global_shortcut().on_shortcuts(shortcut, |_| {
+            app.global_shortcut().on_shortcuts([shortcut], |_app, _shortcut, _event| {
                 // Window toggle handled by tray icon click
             })?;
 
