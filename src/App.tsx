@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { TitleBar } from "./components/layout/TitleBar";
 import { Sidebar } from "./components/layout/Sidebar";
 import { ChatPanel } from "./components/chat/ChatPanel";
 import { SettingsPanel } from "./components/settings/SettingsPanel";
 import { useChatStore } from "./stores/chatStore";
-import { useSettingsStore } from "./stores/settingsStore";
 
 type View = "chat" | "settings";
 
@@ -35,9 +34,11 @@ export default function App() {
           }}
           onOpenSettings={() => setView("settings")}
         />
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "var(--bg-primary)" }}>
           {view === "settings" ? (
-            <SettingsPanel onBack={() => setView("chat")} />
+            <div className="animate-fade-in h-full">
+              <SettingsPanel onBack={() => setView("chat")} />
+            </div>
           ) : (
             <ChatPanel conversation={activeConversation} />
           )}

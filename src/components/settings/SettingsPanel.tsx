@@ -1,4 +1,4 @@
-import { ArrowLeft, Key, Globe, Palette, Keyboard } from "lucide-react";
+import { ArrowLeft, Key, Globe, Palette, Keyboard, Check } from "lucide-react";
 import { useSettingsStore, AIProvider } from "../../stores/settingsStore";
 
 interface SettingsPanelProps {
@@ -7,9 +7,73 @@ interface SettingsPanelProps {
 
 const providers: { value: AIProvider; label: string; defaultUrl: string; defaultModel: string }[] = [
   { value: "openai", label: "OpenAI", defaultUrl: "https://api.openai.com/v1", defaultModel: "gpt-4o-mini" },
-  { value: "zhipu", label: "智谱 GLM (Zhipu)", defaultUrl: "https://open.bigmodel.cn/api/paas/v4", defaultModel: "glm-4-flash" },
-  { value: "custom", label: "Custom (OpenAI Compatible)", defaultUrl: "", defaultModel: "" },
+  { value: "zhipu", label: "GLM (Zhipu)", defaultUrl: "https://open.bigmodel.cn/api/paas/v4", defaultModel: "glm-4-flash" },
+  { value: "custom", label: "Custom", defaultUrl: "", defaultModel: "" },
 ];
+
+const themes = [
+  { value: "dark" as const, label: "Dark", icon: "🌙" },
+  { value: "light" as const, label: "Light", icon: "☀️" },
+];
+
+function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div
+      className={`rounded-xl p-4 ${className}`}
+      style={{
+        background: "var(--bg-tertiary)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionLabel({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      {icon}
+      <h3 className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+        {label}
+      </h3>
+    </div>
+  );
+}
+
+function FormInput({
+  label,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="mb-3 last:mb-0">
+      <label className="block text-xs mb-1.5" style={{ color: "var(--text-muted)" }}>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-3 py-2.5 rounded-xl text-sm bg-transparent border outline-none transition-all duration-200 placeholder-gray-600"
+        style={{
+          borderColor: "var(--border-light)",
+          color: "var(--text-primary)",
+          background: "var(--bg-elevated)",
+        }}
+      />
+    </div>
+  );
+}
 
 export function SettingsPanel({ onBack }: SettingsPanelProps) {
   const { settings, updateAI, updateSettings } = useSettingsStore();
@@ -28,136 +92,188 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* Header */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 border-b shrink-0"
-        style={{ borderColor: "var(--border)" }}
-      >
+      <div className="flex items-center gap-3 px-5 py-3 shrink-0 relative">
+        <div
+          className="absolute bottom-0 left-5 right-5 h-px"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent)",
+          }}
+        />
         <button
           onClick={onBack}
-          className="p-1 rounded hover:bg-white/5 transition-colors"
+          className="p-1.5 rounded-lg transition-all duration-200 hover:bg-white/[0.06] active:scale-90"
         >
-          <ArrowLeft className="w-4 h-4 text-gray-400" />
+          <ArrowLeft className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
         </button>
-        <h2 className="text-sm font-semibold text-gray-200">Settings</h2>
+        <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+          Settings
+        </h2>
       </div>
 
-      <div className="flex-1 p-4 space-y-6">
-        {/* AI Provider */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <Key className="w-4 h-4" style={{ color: "var(--accent)" }} />
-            <h3 className="text-sm font-medium text-gray-300">AI Provider</h3>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Provider</label>
-              <select
-                value={settings.ai.provider}
-                onChange={(e) => handleProviderChange(e.target.value as AIProvider)}
-                className="w-full px-3 py-2 rounded-lg text-sm bg-transparent border outline-none text-gray-200"
-                style={{ borderColor: "var(--border)", background: "var(--bg-tertiary)" }}
+      <div className="flex-1 p-5 space-y-4">
+        {/* AI Provider Section */}
+        <Card>
+          <SectionLabel
+            icon={<Key className="w-4 h-4" style={{ color: "var(--accent)" }} />}
+            label="AI Provider"
+          />
+
+          {/* Segmented Control for Provider */}
+          <div className="mb-4 p-1 rounded-xl flex gap-1" style={{ background: "var(--bg-elevated)" }}>
+            {providers.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => handleProviderChange(p.value)}
+                className="flex-1 py-2 px-2 rounded-lg text-xs font-medium transition-all duration-200"
+                style={{
+                  background:
+                    settings.ai.provider === p.value
+                      ? "linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.08))"
+                      : "transparent",
+                  color:
+                    settings.ai.provider === p.value
+                      ? "var(--accent-hover)"
+                      : "var(--text-muted)",
+                  border:
+                    settings.ai.provider === p.value
+                      ? "1px solid rgba(6, 182, 212, 0.2)"
+                      : "1px solid transparent",
+                }}
               >
-                {providers.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">API Key</label>
-              <input
-                type="password"
-                value={settings.ai.apiKey}
-                onChange={(e) => updateAI({ apiKey: e.target.value })}
-                placeholder="sk-..."
-                className="w-full px-3 py-2 rounded-lg text-sm bg-transparent border outline-none text-gray-200 placeholder-gray-600"
-                style={{ borderColor: "var(--border)", background: "var(--bg-tertiary)" }}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Base URL</label>
-              <input
-                type="text"
-                value={settings.ai.baseUrl}
-                onChange={(e) => updateAI({ baseUrl: e.target.value })}
-                placeholder="https://api.openai.com/v1"
-                className="w-full px-3 py-2 rounded-lg text-sm bg-transparent border outline-none text-gray-200 placeholder-gray-600"
-                style={{ borderColor: "var(--border)", background: "var(--bg-tertiary)" }}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Model</label>
-              <input
-                type="text"
-                value={settings.ai.model}
-                onChange={(e) => updateAI({ model: e.target.value })}
-                placeholder="gpt-4o-mini"
-                className="w-full px-3 py-2 rounded-lg text-sm bg-transparent border outline-none text-gray-200 placeholder-gray-600"
-                style={{ borderColor: "var(--border)", background: "var(--bg-tertiary)" }}
-              />
-            </div>
+                {settings.ai.provider === p.value && (
+                  <Check className="w-3 h-3 inline mr-1" style={{ verticalAlign: "-2px" }} />
+                )}
+                {p.label}
+              </button>
+            ))}
           </div>
-        </section>
 
-        {/* Appearance */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <Palette className="w-4 h-4" style={{ color: "var(--accent)" }} />
-            <h3 className="text-sm font-medium text-gray-300">Appearance</h3>
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Theme</label>
-            <div className="flex gap-2">
-              {(["dark", "light"] as const).map((theme) => (
+          <FormInput
+            label="API Key"
+            type="password"
+            value={settings.ai.apiKey}
+            onChange={(v) => updateAI({ apiKey: v })}
+            placeholder="sk-..."
+          />
+          <FormInput
+            label="Base URL"
+            value={settings.ai.baseUrl}
+            onChange={(v) => updateAI({ baseUrl: v })}
+            placeholder="https://api.openai.com/v1"
+          />
+          <FormInput
+            label="Model"
+            value={settings.ai.model}
+            onChange={(v) => updateAI({ model: v })}
+            placeholder="gpt-4o-mini"
+          />
+        </Card>
+
+        {/* Appearance Section */}
+        <Card>
+          <SectionLabel
+            icon={<Palette className="w-4 h-4" style={{ color: "var(--accent)" }} />}
+            label="Appearance"
+          />
+
+          <label className="block text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>
+            Theme
+          </label>
+          <div className="flex gap-2">
+            {themes.map((theme) => {
+              const isActive = settings.theme === theme.value;
+              return (
                 <button
-                  key={theme}
-                  onClick={() => updateSettings({ theme })}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors border ${
-                    settings.theme === theme
-                      ? "border-cyan-500 text-cyan-400"
-                      : "border-transparent text-gray-500 hover:text-gray-300"
-                  }`}
-                  style={{ background: "var(--bg-tertiary)" }}
+                  key={theme.value}
+                  onClick={() => updateSettings({ theme: theme.value })}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98]"
+                  style={{
+                    background: isActive
+                      ? "linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.05))"
+                      : "var(--bg-elevated)",
+                    color: isActive ? "var(--accent-hover)" : "var(--text-muted)",
+                    border: isActive
+                      ? "1px solid rgba(6, 182, 212, 0.25)"
+                      : "1px solid var(--border)",
+                    boxShadow: isActive
+                      ? "0 0 12px rgba(6, 182, 212, 0.1)"
+                      : "none",
+                  }}
                 >
-                  {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
+                  <span className="mr-1.5">{theme.icon}</span>
+                  {theme.label}
+                  {isActive && (
+                    <Check
+                      className="w-3 h-3 inline ml-1"
+                      style={{ verticalAlign: "-2px", color: "var(--accent)" }}
+                    />
+                  )}
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        </section>
+        </Card>
 
-        {/* Shortcut */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <Keyboard className="w-4 h-4" style={{ color: "var(--accent)" }} />
-            <h3 className="text-sm font-medium text-gray-300">Shortcut</h3>
-          </div>
+        {/* Shortcut Section */}
+        <Card>
+          <SectionLabel
+            icon={<Keyboard className="w-4 h-4" style={{ color: "var(--accent)" }} />}
+            label="Shortcut"
+          />
+
           <div
-            className="px-3 py-2 rounded-lg text-sm text-gray-400 border"
-            style={{ borderColor: "var(--border)", background: "var(--bg-tertiary)" }}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm"
+            style={{
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border)",
+            }}
           >
-            <kbd className="px-1.5 py-0.5 rounded text-xs bg-white/5 border border-white/10">
+            <kbd
+              className="px-2 py-1 rounded-lg text-xs font-medium"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "var(--text-secondary)",
+              }}
+            >
               {settings.shortcut === "ctrl+space" ? "Ctrl" : "⌘ Cmd"}
             </kbd>
-            {" + "}
-            <kbd className="px-1.5 py-0.5 rounded text-xs bg-white/5 border border-white/10">Space</kbd>
-            <span className="text-xs text-gray-600 ml-2">Toggle ClawDesk</span>
+            <span style={{ color: "var(--text-muted)" }}>+</span>
+            <kbd
+              className="px-2 py-1 rounded-lg text-xs font-medium"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "var(--text-secondary)",
+              }}
+            >
+              Space
+            </kbd>
+            <span className="text-xs ml-1" style={{ color: "var(--text-muted)" }}>
+              Toggle ClawDesk
+            </span>
           </div>
-        </section>
+        </Card>
 
-        {/* About */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <Globe className="w-4 h-4" style={{ color: "var(--accent)" }} />
-            <h3 className="text-sm font-medium text-gray-300">About</h3>
+        {/* About Section */}
+        <Card>
+          <SectionLabel
+            icon={<Globe className="w-4 h-4" style={{ color: "var(--accent)" }} />}
+            label="About"
+          />
+
+          <div className="space-y-1.5">
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              ClawDesk <span style={{ color: "var(--text-muted)" }}>v0.1.0</span>
+            </p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+              AI Desktop Assistant by CraftMind
+            </p>
+            <p className="text-xs font-medium" style={{ color: "var(--accent)" }}>
+              craftmind.cn
+            </p>
           </div>
-          <div className="text-xs text-gray-500 space-y-1">
-            <p>ClawDesk v0.1.0</p>
-            <p>AI Desktop Assistant by CraftMind</p>
-            <p style={{ color: "var(--accent)" }}>craftmind.cn</p>
-          </div>
-        </section>
+        </Card>
       </div>
     </div>
   );
