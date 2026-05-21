@@ -1,5 +1,9 @@
-import { ArrowLeft, Key, Globe, Palette, Keyboard, Check } from "lucide-react";
+import { ArrowLeft, Key, Globe, Palette, Keyboard, Check, Languages, Database, RefreshCw } from "lucide-react";
 import { useSettingsStore, AIProvider } from "../../stores/settingsStore";
+import { setLocale, t } from "../../lib/i18n";
+import type { Locale } from "../../lib/i18n";
+import { UpdaterPanel } from "./UpdaterPanel";
+import { DataPanel } from "./DataPanel";
 
 interface SettingsPanelProps {
   onBack: () => void;
@@ -14,6 +18,11 @@ const providers: { value: AIProvider; label: string; defaultUrl: string; default
 const themes = [
   { value: "dark" as const, label: "Dark", icon: "🌙" },
   { value: "light" as const, label: "Light", icon: "☀️" },
+];
+
+const languages: { value: Locale; label: string }[] = [
+  { value: "zh", label: "中文" },
+  { value: "en", label: "English" },
 ];
 
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -77,6 +86,7 @@ function FormInput({
 
 export function SettingsPanel({ onBack }: SettingsPanelProps) {
   const { settings, updateAI, updateSettings } = useSettingsStore();
+  const locale = settings.locale;
 
   const handleProviderChange = (provider: AIProvider) => {
     const preset = providers.find((p) => p.value === provider);
@@ -87,6 +97,11 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
         model: preset.defaultModel,
       });
     }
+  };
+
+  const handleLocaleChange = (newLocale: Locale) => {
+    setLocale(newLocale);
+    updateSettings({ locale: newLocale });
   };
 
   return (
@@ -106,7 +121,7 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           <ArrowLeft className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
         </button>
         <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-          Settings
+          {t("settings.title", locale)}
         </h2>
       </div>
 
@@ -115,7 +130,7 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
         <Card>
           <SectionLabel
             icon={<Key className="w-4 h-4" style={{ color: "var(--accent)" }} />}
-            label="AI Provider"
+            label={t("settings.ai", locale)}
           />
 
           {/* Segmented Control for Provider */}
@@ -149,20 +164,20 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           </div>
 
           <FormInput
-            label="API Key"
+            label={t("settings.apiKey", locale)}
             type="password"
             value={settings.ai.apiKey}
             onChange={(v) => updateAI({ apiKey: v })}
             placeholder="sk-..."
           />
           <FormInput
-            label="Base URL"
+            label={t("settings.baseUrl", locale)}
             value={settings.ai.baseUrl}
             onChange={(v) => updateAI({ baseUrl: v })}
             placeholder="https://api.openai.com/v1"
           />
           <FormInput
-            label="Model"
+            label={t("settings.model", locale)}
             value={settings.ai.model}
             onChange={(v) => updateAI({ model: v })}
             placeholder="gpt-4o-mini"
@@ -173,13 +188,14 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
         <Card>
           <SectionLabel
             icon={<Palette className="w-4 h-4" style={{ color: "var(--accent)" }} />}
-            label="Appearance"
+            label={t("settings.appearance", locale)}
           />
 
+          {/* Theme */}
           <label className="block text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>
-            Theme
+            {t("settings.theme", locale)}
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-4">
             {themes.map((theme) => {
               const isActive = settings.theme === theme.value;
               return (
@@ -212,13 +228,50 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
               );
             })}
           </div>
+
+          {/* Language */}
+          <label className="block text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>
+            {t("settings.language", locale)}
+          </label>
+          <div className="flex gap-2">
+            {languages.map((lang) => {
+              const isActive = settings.locale === lang.value;
+              return (
+                <button
+                  key={lang.value}
+                  onClick={() => handleLocaleChange(lang.value)}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98]"
+                  style={{
+                    background: isActive
+                      ? "linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.05))"
+                      : "var(--bg-elevated)",
+                    color: isActive ? "var(--accent-hover)" : "var(--text-muted)",
+                    border: isActive
+                      ? "1px solid rgba(6, 182, 212, 0.25)"
+                      : "1px solid var(--border)",
+                    boxShadow: isActive
+                      ? "0 0 12px rgba(6, 182, 212, 0.1)"
+                      : "none",
+                  }}
+                >
+                  {lang.label}
+                  {isActive && (
+                    <Check
+                      className="w-3 h-3 inline ml-1"
+                      style={{ verticalAlign: "-2px", color: "var(--accent)" }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </Card>
 
         {/* Shortcut Section */}
         <Card>
           <SectionLabel
             icon={<Keyboard className="w-4 h-4" style={{ color: "var(--accent)" }} />}
-            label="Shortcut"
+            label={t("settings.shortcut", locale)}
           />
 
           <div
@@ -250,16 +303,34 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
               Space
             </kbd>
             <span className="text-xs ml-1" style={{ color: "var(--text-muted)" }}>
-              Toggle ClawDesk
+              {t("settings.toggleClawdesk", locale)}
             </span>
           </div>
+        </Card>
+
+        {/* Data Management Section */}
+        <Card>
+          <SectionLabel
+            icon={<Database className="w-4 h-4" style={{ color: "var(--accent)" }} />}
+            label={t("settings.data.title", locale)}
+          />
+          <DataPanel />
+        </Card>
+
+        {/* Update Section */}
+        <Card>
+          <SectionLabel
+            icon={<RefreshCw className="w-4 h-4" style={{ color: "var(--accent)" }} />}
+            label={t("settings.checkUpdate", locale)}
+          />
+          <UpdaterPanel />
         </Card>
 
         {/* About Section */}
         <Card>
           <SectionLabel
             icon={<Globe className="w-4 h-4" style={{ color: "var(--accent)" }} />}
-            label="About"
+            label={t("settings.about", locale)}
           />
 
           <div className="space-y-1.5">
@@ -267,7 +338,7 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
               ClawDesk <span style={{ color: "var(--text-muted)" }}>v0.1.0</span>
             </p>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              AI Desktop Assistant by CraftMind
+              {t("app.tagline", locale)} — CraftMind
             </p>
             <p className="text-xs font-medium" style={{ color: "var(--accent)" }}>
               craftmind.cn

@@ -16,6 +16,8 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_global_shortcut::Builder::default().build())
         .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_updater::Builder::default().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             // Global shortcut: Cmd+Space on macOS, Ctrl+Space elsewhere
             let shortcut = if cfg!(target_os = "macos") {

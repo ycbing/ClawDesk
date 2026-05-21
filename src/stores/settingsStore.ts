@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { Locale } from "../lib/i18n";
 
 export type AIProvider = "openai" | "zhipu" | "custom";
 
@@ -15,6 +16,7 @@ export interface AppSettings {
   theme: "dark" | "light";
   shortcut: string;
   fontSize: number;
+  locale: Locale;
 }
 
 interface SettingsState {
@@ -33,6 +35,7 @@ const defaultSettings: AppSettings = {
   theme: "dark",
   shortcut: "ctrl+space",
   fontSize: 14,
+  locale: "zh",
 };
 
 export const useSettingsStore = create<SettingsState>()(
