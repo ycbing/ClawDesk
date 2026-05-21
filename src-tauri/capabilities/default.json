@@ -1,0 +1,28 @@
+{
+  "identifier": "default",
+  "description": "ClawDesk default capabilities",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-close",
+    "core:window:allow-set-always-on-top",
+    "core:window:allow-center",
+    "core:window:allow-hide",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
+    "core:tray:default",
+    "clipboard-manager:default",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
+    "shell:allow-open",
+    "fs:default",
+    "fs:allow-read-text-file",
+    "fs:allow-exists",
+    "global-shortcut:default",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister"
+  ]
+}
