@@ -1,49 +1,115 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { TitleBar } from "./components/layout/TitleBar";
 import { Sidebar } from "./components/layout/Sidebar";
 import { ChatPanel } from "./components/chat/ChatPanel";
 import { SettingsPanel } from "./components/settings/SettingsPanel";
+import { FileSearch } from "./components/tools/FileSearch";
+import { ClipboardPanel } from "./components/tools/ClipboardPanel";
+import { TerminalPanel } from "./components/tools/TerminalPanel";
+import { SnippetsPanel } from "./components/tools/SnippetsPanel";
+import { CommandPalette } from "./components/command/CommandPalette";
 import { useChatStore } from "./stores/chatStore";
+import { useToolStore } from "./stores/toolStore";
+import { MainView } from "./stores/toolStore";
 
-type View = "chat" | "settings";
+type View = "chat" | "settings" | MainView;
 
 export default function App() {
   const [view, setView] = useState<View>("chat");
-  const { conversations, activeConversationId } = useChatStore();
+  const [showPalette, setShowPalette] = useState(false);
+  const { conversations, activeConversationId, addMessage } = useChatStore();
+  const { mainView, setMainView } = useToolStore();
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
+
+  // Sync mainView from toolStore into the combined view
+  const effectiveView: View = view === "settings" ? "settings" : mainView;
 
   // Listen for toggle-window event from Rust
   useEffect(() => {
     const unlisten = listen("toggle-window", () => {
-      // Window show/hide is handled by Rust, but we can refocus input here
+      // Window show/hide is handled by Rust
     });
     return () => {
       unlisten.then((fn) => fn());
     };
   }, []);
 
+  // Ctrl+K / Cmd+K for command palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setShowPalette((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleNewChat = useCallback(() => {
+    setMainView("chat");
+    setView("chat");
+    useChatStore.getState().createConversation();
+  }, [setMainView]);
+
+  const handleOpenSettings = useCallback(() => {
+    setView("settings");
+  }, []);
+
+  const handleInsertToChat = useCallback(
+    (content: string) => {
+      let convId = activeConversationId;
+      if (!convId) {
+        convId = useChatStore.getState().createConversation();
+      }
+      addMessage(convId, { role: "user", content });
+      setMainView("chat");
+    },
+    [activeConversationId, addMessage, setMainView]
+  );
+
+  const handleClosePalette = useCallback(() => {
+    setShowPalette(false);
+  }, []);
+
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden" style={{ background: "var(--bg-primary)" }}>
+    <div
+      className="flex flex-col h-screen w-screen overflow-hidden relative"
+      style={{ background: "var(--bg-primary)" }}
+    >
       <TitleBar />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          onNewChat={() => {
-            setView("chat");
-            useChatStore.getState().createConversation();
-          }}
-          onOpenSettings={() => setView("settings")}
-        />
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "var(--bg-primary)" }}>
-          {view === "settings" ? (
+        <Sidebar onNewChat={handleNewChat} onOpenSettings={handleOpenSettings} />
+        <div
+          className="flex-1 flex flex-col overflow-hidden relative"
+          style={{ background: "var(--bg-primary)" }}
+        >
+          {effectiveView === "settings" ? (
             <div className="animate-fade-in h-full">
               <SettingsPanel onBack={() => setView("chat")} />
             </div>
+          ) : effectiveView === "filesearch" ? (
+            <FileSearch onInsertToChat={handleInsertToChat} />
+          ) : effectiveView === "clipboard" ? (
+            <ClipboardPanel />
+          ) : effectiveView === "terminal" ? (
+            <TerminalPanel />
+          ) : effectiveView === "snippets" ? (
+            <SnippetsPanel />
           ) : (
             <ChatPanel conversation={activeConversation} />
           )}
         </div>
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={showPalette}
+        onClose={handleClosePalette}
+        onNewChat={handleNewChat}
+        onOpenSettings={handleOpenSettings}
+      />
     </div>
   );
 }

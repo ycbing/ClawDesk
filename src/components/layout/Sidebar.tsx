@@ -1,14 +1,22 @@
-import { MessageSquarePlus, Settings, Trash2, MessageCircle } from "lucide-react";
+import { MessageSquarePlus, Settings, Trash2, MessageCircle, FolderOpen, Clipboard, Terminal } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
+import { useToolStore, MainView } from "../../stores/toolStore";
 
 interface SidebarProps {
   onNewChat: () => void;
   onOpenSettings: () => void;
 }
 
+const toolButtons: { view: MainView; icon: typeof FolderOpen; label: string }[] = [
+  { view: "filesearch", icon: FolderOpen, label: "Files" },
+  { view: "clipboard", icon: Clipboard, label: "Clipboard" },
+  { view: "terminal", icon: Terminal, label: "Terminal" },
+];
+
 export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
   const { conversations, activeConversationId, setActiveConversation, deleteConversation } =
     useChatStore();
+  const { mainView, setMainView } = useToolStore();
 
   return (
     <div
@@ -28,7 +36,10 @@ export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
       {/* New Chat Button */}
       <div className="p-3 pb-2">
         <button
-          onClick={onNewChat}
+          onClick={() => {
+            setMainView("chat");
+            onNewChat();
+          }}
           className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg active:scale-[0.98]"
           style={{
             background: "linear-gradient(135deg, #06b6d4, #0891b2)",
@@ -52,14 +63,17 @@ export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
       {/* Conversation List */}
       <div className="flex-1 overflow-y-auto px-2 space-y-0.5">
         {conversations.map((conv) => {
-          const isActive = activeConversationId === conv.id;
+          const isActive = activeConversationId === conv.id && mainView === "chat";
           return (
             <div
               key={conv.id}
               className={`group relative flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm transition-all duration-200 ${
                 isActive ? "" : "hover:bg-white/[0.04]"
               }`}
-              onClick={() => setActiveConversation(conv.id)}
+              onClick={() => {
+                setActiveConversation(conv.id);
+                setMainView("chat");
+              }}
               style={{
                 background: isActive ? "rgba(6, 182, 212, 0.08)" : undefined,
               }}
@@ -119,6 +133,43 @@ export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
         )}
       </div>
 
+      {/* Tool Buttons */}
+      <div className="px-2 py-1">
+        <div className="flex items-center justify-center gap-1">
+          {toolButtons.map(({ view, icon: Icon, label }) => {
+            const isActive = mainView === view;
+            return (
+              <button
+                key={view}
+                onClick={() => setMainView(view)}
+                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[11px] font-medium transition-all duration-200"
+                style={{
+                  background: isActive ? "rgba(6, 182, 212, 0.1)" : undefined,
+                  color: isActive ? "var(--accent)" : "var(--text-muted)",
+                  border: isActive ? "1px solid rgba(6, 182, 212, 0.15)" : "1px solid transparent",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                    e.currentTarget.style.color = "var(--text-secondary)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "";
+                    e.currentTarget.style.color = "var(--text-muted)";
+                  }
+                }}
+                title={label}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Settings Button */}
       <div className="p-2 relative">
         <div
@@ -128,7 +179,10 @@ export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
           }}
         />
         <button
-          onClick={onOpenSettings}
+          onClick={() => {
+            setMainView("chat");
+            onOpenSettings();
+          }}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 hover:bg-white/[0.04] group"
           style={{ color: "var(--text-muted)" }}
         >
