@@ -333,16 +333,61 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
             label={t("settings.about", locale)}
           />
 
-          <div className="space-y-1.5">
-            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-              ClawDesk <span style={{ color: "var(--text-muted)" }}>v0.1.0</span>
-            </p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>ClawDesk</h3>
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded-md font-medium"
+                style={{
+                  background: "rgba(6, 182, 212, 0.1)",
+                  color: "var(--accent)",
+                  border: "1px solid rgba(6, 182, 212, 0.15)",
+                }}
+              >
+                v0.1.0
+              </span>
+            </div>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               {t("app.tagline", locale)} — CraftMind
             </p>
-            <p className="text-xs font-medium" style={{ color: "var(--accent)" }}>
-              craftmind.cn
-            </p>
+            <div
+              className="text-[11px] px-3 py-2 rounded-lg"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border)",
+                color: "var(--text-secondary)",
+              }}
+            >
+              {t("settings.about.stack", locale)}: React + TypeScript + Tauri v2 + Rust
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                {t("settings.about.author", locale)}: ycbing
+              </span>
+              <a
+                href="https://github.com/ycbing/ClawDesk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs transition-colors duration-200"
+                style={{ color: "var(--accent)" }}
+              >
+                {t("settings.about.github", locale)} →
+              </a>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{
+                  background: settings.ai.apiKey ? "#22c55e" : "#ef4444",
+                  boxShadow: settings.ai.apiKey
+                    ? "0 0 6px rgba(34, 197, 94, 0.4)"
+                    : "0 0 6px rgba(239, 68, 68, 0.3)",
+                }}
+              />
+              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                API: {settings.ai.apiKey ? t("settings.about.apiConfigured", locale) : t("settings.about.apiNotConfigured", locale)}
+              </span>
+            </div>
           </div>
         </Card>
       </div>

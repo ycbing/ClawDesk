@@ -9,6 +9,7 @@ import { ClipboardPanel } from "./components/tools/ClipboardPanel";
 import { TerminalPanel } from "./components/tools/TerminalPanel";
 import { SnippetsPanel } from "./components/tools/SnippetsPanel";
 import { CommandPalette } from "./components/command/CommandPalette";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useChatStore } from "./stores/chatStore";
 import { useToolStore } from "./stores/toolStore";
 import { MainView } from "./stores/toolStore";
@@ -45,6 +46,33 @@ export default function App() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Window size memory (save to localStorage)
+  useEffect(() => {
+    const handleResize = () => {
+      localStorage.setItem(
+        "clawdesk-window-size",
+        JSON.stringify({ width: window.innerWidth, height: window.innerHeight })
+      );
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Load saved window size hint
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("clawdesk-window-size");
+      if (saved) {
+        const { width, height } = JSON.parse(saved);
+        if (width && height) {
+          window.resizeTo(width, height);
+        }
+      }
+    } catch {
+      // ignore
+    }
   }, []);
 
   const handleNewChat = useCallback(() => {
@@ -85,21 +113,23 @@ export default function App() {
           className="flex-1 flex flex-col overflow-hidden relative"
           style={{ background: "var(--bg-primary)" }}
         >
-          {effectiveView === "settings" ? (
-            <div className="animate-fade-in h-full">
-              <SettingsPanel onBack={() => setView("chat")} />
-            </div>
-          ) : effectiveView === "filesearch" ? (
-            <FileSearch onInsertToChat={handleInsertToChat} />
-          ) : effectiveView === "clipboard" ? (
-            <ClipboardPanel />
-          ) : effectiveView === "terminal" ? (
-            <TerminalPanel />
-          ) : effectiveView === "snippets" ? (
-            <SnippetsPanel />
-          ) : (
-            <ChatPanel conversation={activeConversation} />
-          )}
+          <ErrorBoundary>
+            {effectiveView === "settings" ? (
+              <div className="animate-fade-in h-full">
+                <SettingsPanel onBack={() => setView("chat")} />
+              </div>
+            ) : effectiveView === "filesearch" ? (
+              <FileSearch onInsertToChat={handleInsertToChat} />
+            ) : effectiveView === "clipboard" ? (
+              <ClipboardPanel />
+            ) : effectiveView === "terminal" ? (
+              <TerminalPanel />
+            ) : effectiveView === "snippets" ? (
+              <SnippetsPanel />
+            ) : (
+              <ChatPanel conversation={activeConversation} />
+            )}
+          </ErrorBoundary>
         </div>
       </div>
 

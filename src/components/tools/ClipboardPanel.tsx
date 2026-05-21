@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Clipboard, Search, Trash2, Copy, Clock, Check } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useToolStore, ClipboardEntry } from "../../stores/toolStore";
+import { t } from "../../lib/i18n";
 
 export function ClipboardPanel() {
   const { clipboardHistory, addClipboardEntry, clearClipboardHistory } = useToolStore();
@@ -81,10 +82,10 @@ export function ClipboardPanel() {
             </div>
             <div>
               <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                Clipboard History
+                {t("clipboard.title")}
               </h2>
               <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                Auto-captured from your clipboard
+                {t("clipboard.subtitle")}
               </p>
             </div>
           </div>
@@ -102,14 +103,14 @@ export function ClipboardPanel() {
                       border: "1px solid rgba(239, 68, 68, 0.2)",
                     }}
                   >
-                    Confirm
+                    {t("clipboard.confirm")}
                   </button>
                   <button
                     onClick={() => setShowClearConfirm(false)}
                     className="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-200 hover:bg-white/[0.04]"
                     style={{ color: "var(--text-muted)" }}
                   >
-                    Cancel
+                    {t("clipboard.cancel")}
                   </button>
                 </div>
               ) : (
@@ -136,7 +137,7 @@ export function ClipboardPanel() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search clipboard history..."
+              placeholder={t("clipboard.search")}
               className="w-full pl-10 pr-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-300"
               style={{
                 background: "var(--bg-tertiary)",
@@ -206,10 +207,10 @@ export function ClipboardPanel() {
               <Clipboard className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
             </div>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              No clipboard history yet
+              {t("clipboard.empty")}
             </p>
             <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)", opacity: 0.6 }}>
-              Copy text and it will appear here
+              {t("clipboard.hint")}
             </p>
           </div>
         )}
@@ -217,7 +218,7 @@ export function ClipboardPanel() {
         {clipboardHistory.length > 0 && filtered.length === 0 && searchQuery && (
           <div className="flex flex-col items-center justify-center py-16">
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              No matches found
+              {t("clipboard.noMatches")}
             </p>
           </div>
         )}

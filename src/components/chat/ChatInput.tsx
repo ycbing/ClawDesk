@@ -8,14 +8,13 @@ import { getLocale } from "../../lib/i18n";
 
 export function ChatInput() {
   const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const { activeConversationId, addMessage, updateLastAssistantMessage, createConversation } =
+  const { activeConversationId, addMessage, updateLastAssistantMessage, createConversation, isStreaming, setIsStreaming } =
     useChatStore();
   const { settings } = useSettingsStore();
   const abortRef = useRef<AbortController | null>(null);
@@ -81,6 +80,7 @@ export function ChatInput() {
       );
     } finally {
       setIsStreaming(false);
+      abortRef.current = null;
     }
   };
 

@@ -14,6 +14,7 @@ import {
 import { useToolStore, MainView } from "../../stores/toolStore";
 import { useChatStore } from "../../stores/chatStore";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { t } from "../../lib/i18n";
 
 interface CommandItem {
   id: string;
@@ -21,6 +22,7 @@ interface CommandItem {
   description: string;
   icon: React.ReactNode;
   category: string;
+  shortcut?: string;
   action: () => void;
 }
 
@@ -43,23 +45,25 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
   const commands = useMemo<CommandItem[]>(() => [
     {
       id: "new-chat",
-      label: "New Chat",
+      label: t("palette.commands.newChat"),
       description: "Start a new conversation",
       icon: <MessageSquarePlus className="w-4 h-4" />,
       category: "Chat",
+      shortcut: t("palette.shortcuts.newChat"),
       action: () => { onNewChat(); onClose(); },
     },
     {
       id: "open-settings",
-      label: "Open Settings",
+      label: t("palette.commands.settings"),
       description: "Configure API keys and preferences",
       icon: <Settings className="w-4 h-4" />,
       category: "App",
+      shortcut: t("palette.shortcuts.settings"),
       action: () => { onOpenSettings(); onClose(); },
     },
     {
       id: "file-search",
-      label: "File Search",
+      label: t("palette.commands.files"),
       description: "Search and preview files",
       icon: <FileSearch className="w-4 h-4" />,
       category: "Tools",
@@ -67,7 +71,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
     },
     {
       id: "clipboard",
-      label: "Clipboard History",
+      label: t("palette.commands.clipboard"),
       description: "View and manage clipboard",
       icon: <Clipboard className="w-4 h-4" />,
       category: "Tools",
@@ -75,7 +79,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
     },
     {
       id: "terminal",
-      label: "Terminal",
+      label: t("palette.commands.terminal"),
       description: "Execute shell commands",
       icon: <Terminal className="w-4 h-4" />,
       category: "Tools",
@@ -83,7 +87,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
     },
     {
       id: "snippets",
-      label: "Code Snippets",
+      label: t("palette.commands.snippets"),
       description: "Manage code and text snippets",
       icon: <Code className="w-4 h-4" />,
       category: "Tools",
@@ -91,7 +95,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
     },
     {
       id: "clear-chat",
-      label: "Clear Chat",
+      label: t("palette.commands.clearChat"),
       description: "Clear messages in current chat",
       icon: <Trash2 className="w-4 h-4" />,
       category: "Chat",
@@ -102,7 +106,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
     },
     {
       id: "toggle-theme",
-      label: settings.theme === "dark" ? "Light Mode" : "Dark Mode",
+      label: t("palette.commands.toggleTheme"),
       description: "Switch application theme",
       icon: settings.theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />,
       category: "App",
@@ -197,7 +201,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a command..."
+            placeholder={t("palette.placeholder")}
             className="flex-1 bg-transparent outline-none text-sm"
             style={{ color: "var(--text-primary)" }}
           />
@@ -218,7 +222,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
           {filtered.length === 0 && (
             <div className="flex items-center justify-center py-8">
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                No commands found
+                {t("palette.noResults")}
               </p>
             </div>
           )}
@@ -259,16 +263,31 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
                     {cmd.description}
                   </p>
                 </div>
-                <span
-                  className="text-[10px] px-1.5 py-0.5 rounded shrink-0"
-                  style={{
-                    background: "var(--bg-tertiary)",
-                    color: "var(--text-muted)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  {cmd.category}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {cmd.shortcut && (
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded"
+                      style={{
+                        background: "rgba(6, 182, 212, 0.08)",
+                        color: "var(--accent)",
+                        border: "1px solid rgba(6, 182, 212, 0.15)",
+                        fontFamily: "'SF Mono', 'Fira Code', monospace",
+                      }}
+                    >
+                      {cmd.shortcut}
+                    </span>
+                  )}
+                  <span
+                    className="text-[10px] px-1.5 py-0.5 rounded"
+                    style={{
+                      background: "var(--bg-tertiary)",
+                      color: "var(--text-muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {cmd.category}
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -290,7 +309,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
             >
               ↑↓
             </kbd>
-            Navigate
+            {t("palette.navigate")}
           </span>
           <span className="flex items-center gap-1">
             <kbd
@@ -303,7 +322,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
             >
               ↵
             </kbd>
-            Select
+            {t("palette.select")}
           </span>
           <span className="flex items-center gap-1">
             <kbd
@@ -316,7 +335,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
             >
               esc
             </kbd>
-            Close
+            {t("palette.close")}
           </span>
         </div>
       </div>

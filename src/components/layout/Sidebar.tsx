@@ -1,16 +1,17 @@
 import { MessageSquarePlus, Settings, Trash2, MessageCircle, FolderOpen, Clipboard, Terminal } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
 import { useToolStore, MainView } from "../../stores/toolStore";
+import { t } from "../../lib/i18n";
 
 interface SidebarProps {
   onNewChat: () => void;
   onOpenSettings: () => void;
 }
 
-const toolButtons: { view: MainView; icon: typeof FolderOpen; label: string }[] = [
-  { view: "filesearch", icon: FolderOpen, label: "Files" },
-  { view: "clipboard", icon: Clipboard, label: "Clipboard" },
-  { view: "terminal", icon: Terminal, label: "Terminal" },
+const toolButtons: { view: MainView; icon: typeof FolderOpen; labelKey: string }[] = [
+  { view: "filesearch", icon: FolderOpen, labelKey: "tools.files" },
+  { view: "clipboard", icon: Clipboard, labelKey: "tools.clipboard" },
+  { view: "terminal", icon: Terminal, labelKey: "tools.terminal" },
 ];
 
 export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
@@ -56,7 +57,7 @@ export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
           }}
         >
           <MessageSquarePlus className="w-4 h-4" />
-          <span>New Chat</span>
+          <span>{t("sidebar.newChat")}</span>
         </button>
       </div>
 
@@ -124,10 +125,10 @@ export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
               </div>
             </div>
             <p className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
-              No conversations yet
+              {t("sidebar.noChats")}
             </p>
             <p className="text-[10px] mt-1 text-center" style={{ color: "rgba(95, 99, 104, 0.6)" }}>
-              Click "New Chat" to start
+              {t("sidebar.noChatsHint")}
             </p>
           </div>
         )}
@@ -136,8 +137,9 @@ export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
       {/* Tool Buttons */}
       <div className="px-2 py-1">
         <div className="flex items-center justify-center gap-1">
-          {toolButtons.map(({ view, icon: Icon, label }) => {
+          {toolButtons.map(({ view, icon: Icon, labelKey }) => {
             const isActive = mainView === view;
+            const label = t(labelKey);
             return (
               <button
                 key={view}
@@ -187,7 +189,7 @@ export function Sidebar({ onNewChat, onOpenSettings }: SidebarProps) {
           style={{ color: "var(--text-muted)" }}
         >
           <Settings className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" />
-          <span className="group-hover:text-gray-400 transition-colors duration-200">Settings</span>
+          <span className="group-hover:text-gray-400 transition-colors duration-200">{t("sidebar.settings")}</span>
         </button>
       </div>
     </div>

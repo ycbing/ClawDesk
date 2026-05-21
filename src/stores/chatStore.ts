@@ -19,6 +19,8 @@ export interface Conversation {
 interface ChatState {
   conversations: Conversation[];
   activeConversationId: string | null;
+  isStreaming: boolean;
+  setIsStreaming: (v: boolean) => void;
   createConversation: () => string;
   deleteConversation: (id: string) => void;
   setActiveConversation: (id: string) => void;
@@ -32,6 +34,8 @@ export const useChatStore = create<ChatState>()(
     (set, get) => ({
       conversations: [],
       activeConversationId: null,
+      isStreaming: false,
+      setIsStreaming: (v) => set({ isStreaming: v }),
 
       createConversation: () => {
         const id = crypto.randomUUID();
@@ -79,7 +83,7 @@ export const useChatStore = create<ChatState>()(
             const updatedMessages = [...c.messages, msg];
             const title =
               c.messages.length === 0 && message.role === "user"
-                ? message.content.slice(0, 50) + (message.content.length > 50 ? "..." : "")
+                ? message.content.replace(/\n/g, " ").slice(0, 30) + (message.content.length > 30 ? "..." : "")
                 : c.title;
             return { ...c, messages: updatedMessages, title, updatedAt: Date.now() };
           }),

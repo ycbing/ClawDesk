@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Code, Plus, Search, Trash2, Copy, Check, X } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useToolStore } from "../../stores/toolStore";
+import { t } from "../../lib/i18n";
 
 export function SnippetsPanel() {
   const { snippets, addSnippet, deleteSnippet } = useToolStore();
@@ -65,10 +66,10 @@ export function SnippetsPanel() {
             </div>
             <div>
               <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                Snippets
+                {t("snippets.title")}
               </h2>
               <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                Quick access to code & text
+                {t("snippets.subtitle")}
               </p>
             </div>
           </div>
@@ -95,7 +96,7 @@ export function SnippetsPanel() {
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-                New Snippet
+                {t("snippets.new")}
               </span>
               <button
                 onClick={() => {
@@ -112,7 +113,7 @@ export function SnippetsPanel() {
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Snippet name..."
+              placeholder={t("snippets.namePlaceholder")}
               className="w-full px-3 py-2 rounded-lg text-sm outline-none mb-2"
               style={{
                 background: "var(--bg-primary)",
@@ -123,7 +124,7 @@ export function SnippetsPanel() {
             <textarea
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
-              placeholder="Snippet content..."
+              placeholder={t("snippets.contentPlaceholder")}
               rows={3}
               className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-none mb-3"
               style={{
@@ -144,7 +145,7 @@ export function SnippetsPanel() {
                     : "rgba(255,255,255,0.08)",
               }}
             >
-              Add Snippet
+              {t("snippets.add")}
             </button>
           </div>
         )}
@@ -160,7 +161,7 @@ export function SnippetsPanel() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search snippets..."
+              placeholder={t("snippets.search")}
               className="w-full pl-10 pr-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-300"
               style={{
                 background: "var(--bg-tertiary)",
@@ -246,10 +247,10 @@ export function SnippetsPanel() {
               <Code className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
             </div>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              No snippets yet
+              {t("snippets.empty")}
             </p>
             <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)", opacity: 0.6 }}>
-              Click + to add your first snippet
+              {t("snippets.hint")}
             </p>
           </div>
         )}
@@ -257,7 +258,7 @@ export function SnippetsPanel() {
         {snippets.length > 0 && filtered.length === 0 && searchQuery && (
           <div className="flex flex-col items-center justify-center py-16">
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              No matches found
+              {t("snippets.noMatches")}
             </p>
           </div>
         )}

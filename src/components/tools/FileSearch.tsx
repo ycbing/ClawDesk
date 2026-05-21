@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, File, Folder, Copy, ChevronRight, Loader2 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useChatStore } from "../../stores/chatStore";
+import { t } from "../../lib/i18n";
 
 interface FileInfo {
   name: string;
@@ -124,10 +125,10 @@ export function FileSearch({ onInsertToChat }: FileSearchProps) {
           </div>
           <div>
             <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-              File Search
+              {t("file.title")}
             </h2>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-              Search and preview files on your system
+              {t("file.subtitle")}
             </p>
           </div>
         </div>
@@ -144,7 +145,7 @@ export function FileSearch({ onInsertToChat }: FileSearchProps) {
             value={query}
             onChange={(e) => handleQueryChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search files by name..."
+            placeholder={t("file.search")}
             className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm outline-none transition-all duration-300"
             style={{
               background: "var(--bg-tertiary)",
@@ -167,7 +168,7 @@ export function FileSearch({ onInsertToChat }: FileSearchProps) {
         <div className="flex-1 overflow-y-auto px-2">
           {results.length > 0 && (
             <p className="px-3 py-2 text-[11px]" style={{ color: "var(--text-muted)" }}>
-              {results.length} result{results.length !== 1 ? "s" : ""}
+              {results.length} {t("file.results")}
             </p>
           )}
           {results.map((file, idx) => (
@@ -230,10 +231,10 @@ export function FileSearch({ onInsertToChat }: FileSearchProps) {
             <div className="flex flex-col items-center justify-center py-16 px-4">
               <Search className="w-8 h-8 mb-3" style={{ color: "var(--text-muted)", opacity: 0.3 }} />
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                No files found
+                {t("file.noResults")}
               </p>
               <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)", opacity: 0.6 }}>
-                Try a different search term
+                {t("file.tryDifferent")}
               </p>
             </div>
           )}
@@ -250,10 +251,10 @@ export function FileSearch({ onInsertToChat }: FileSearchProps) {
                 <Search className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
               </div>
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                Type to search files
+                {t("file.typeToSearch")}
               </p>
               <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)", opacity: 0.6 }}>
-                Supports filename and path search
+                {t("file.supportsSearch")}
               </p>
             </div>
           )}
@@ -278,7 +279,7 @@ export function FileSearch({ onInsertToChat }: FileSearchProps) {
                   className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] transition-all duration-200 hover:bg-white/[0.06]"
                   style={{ color: "var(--accent)" }}
                 >
-                  Insert
+                  {t("file.insert")}
                   <ChevronRight className="w-3 h-3" />
                 </button>
               )}

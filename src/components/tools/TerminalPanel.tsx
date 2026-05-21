@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Terminal, Send, Copy, AlertTriangle, Check, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { t } from "../../lib/i18n";
 
 interface CommandOutput {
   cmd: string;
@@ -25,14 +26,18 @@ const DANGEROUS_PATTERNS = [
 function isDangerous(cmd: string): { dangerous: boolean; reason: string } {
   for (const pattern of DANGEROUS_PATTERNS) {
     if (pattern.test(cmd)) {
-      return { dangerous: true, reason: "This command may cause irreversible damage" };
+      return { dangerous: true, reason: t("terminal.dangerousDesc") };
     }
   }
   // Detect sudo usage
   if (/sudo\b/.test(cmd)) {
-    return { dangerous: true, reason: "This command requires elevated privileges" };
+    return { dangerous: true, reason: t("terminal.elevated") };
   }
   return { dangerous: false, reason: "" };
+}
+
+function stripAnsi(text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, "").replace(/\x1b\[[0-9;]*[A-Za-z]/g, "");
 }
 
 export function TerminalPanel() {
@@ -185,7 +190,7 @@ export function TerminalPanel() {
               Terminal
             </h2>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-              Execute shell commands
+              {t("terminal.subtitle")}
             </p>
           </div>
         </div>
@@ -199,9 +204,9 @@ export function TerminalPanel() {
             color: "var(--text-muted)",
           }}
         >
-          <span>↑↓</span> History
+          <span>↑↓</span> {t("terminal.history")}
           <span className="mx-0.5">·</span>
-          <span>Ctrl+L</span> Clear
+          <span>Ctrl+L</span> {t("terminal.clear")}
         </div>
       </div>
 
@@ -228,7 +233,7 @@ export function TerminalPanel() {
                   color: entry.isError ? "#f87171" : "var(--text-secondary)",
                 }}
               >
-                {entry.output}
+                {stripAnsi(entry.output)}
               </pre>
               <button
                 onClick={() => handleCopyOutput(idx)}
@@ -267,10 +272,10 @@ export function TerminalPanel() {
               <Terminal className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
             </div>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              Type a command to execute
+              {t("terminal.typeCommand")}
             </p>
             <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)", opacity: 0.6 }}>
-              Commands run in your system shell
+              {t("terminal.commandsInShell")}
             </p>
           </div>
         )}
@@ -294,7 +299,7 @@ export function TerminalPanel() {
             value={command}
             onChange={(e) => setCommand(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a command..."
+            placeholder={t("terminal.placeholder")}
             disabled={isRunning}
             className="flex-1 bg-transparent outline-none text-sm"
             style={{
@@ -341,7 +346,7 @@ export function TerminalPanel() {
               </div>
               <div>
                 <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                  Dangerous Command
+                  {t("terminal.dangerous")}
                 </h3>
                 <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
                   {pendingDangerous.reason}
@@ -364,7 +369,7 @@ export function TerminalPanel() {
                 className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-white/[0.06]"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Cancel
+                {t("terminal.cancel")}
               </button>
               <button
                 onClick={handleConfirmDangerous}
@@ -374,7 +379,7 @@ export function TerminalPanel() {
                   boxShadow: "0 2px 8px rgba(239, 68, 68, 0.3)",
                 }}
               >
-                Execute Anyway
+                {t("terminal.executeAnyway")}
               </button>
             </div>
           </div>
