@@ -74,6 +74,88 @@ export async function* streamChat(
   }
 }
 
+/* ─── Vision Chat (multimodal) ─── */
+export interface VisionMessage {
+  role: "user" | "assistant" | "system";
+  content: string | VisionContentPart[];
+}
+
+export interface VisionContentPart {
+  type: "text" | "image_url";
+  text?: string;
+  image_url?: { url: string };
+}
+
+export async function* streamVisionChat(
+  messages: VisionMessage[],
+  config: AIConfig
+): AsyncGenerator<string, void, unknown> {
+  const url = `${config.baseUrl.replace(/\/$/, "")}/chat/completions`;
+
+  const body = {
+    model: config.model,
+    messages: messages.map((m) => {
+      if (typeof m.content === "string") {
+        return { role: m.role, content: m.content };
+      }
+      // multimodal content parts
+      return {
+        role: m.role,
+        content: m.content,
+      };
+    }),
+    stream: true,
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${config.apiKey}`,
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`API Error ${response.status}: ${errorText}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || !trimmed.startsWith("data:")) continue;
+      const data = trimmed.slice(5).trim();
+      if (data === "[DONE]") return;
+
+      try {
+        const parsed = JSON.parse(data);
+        const content = parsed.choices?.[0]?.delta?.content;
+        if (content) {
+          yield content;
+        }
+      } catch {
+        // Skip malformed JSON chunks
+      }
+    }
+  }
+}
+
 export function formatMessage(content: string): string {
   // Basic markdown-like formatting for display
   return content

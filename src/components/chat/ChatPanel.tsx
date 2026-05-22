@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Camera } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { Conversation } from "../../stores/chatStore";
 import { useChatStore } from "../../stores/chatStore";
@@ -308,9 +308,10 @@ function MessageBubble({ role, content, isStreaming, isLast }: MessageBubbleProp
 /* ─── Chat Panel ─── */
 interface ChatPanelProps {
   conversation: Conversation | undefined;
+  onOpenScreen?: () => void;
 }
 
-export function ChatPanel({ conversation }: ChatPanelProps) {
+export function ChatPanel({ conversation, onOpenScreen }: ChatPanelProps) {
   const { messages } = conversation || { messages: [] };
   const scrollRef = useRef<HTMLDivElement>(null);
   const isStreaming = useChatStore((s) => s.isStreaming);
@@ -325,7 +326,7 @@ export function ChatPanel({ conversation }: ChatPanelProps) {
     <div className="flex-1 flex flex-col overflow-hidden">
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-6">
         {messages.length === 0 ? (
-          <WelcomeScreen />
+          <WelcomeScreen onOpenScreen={onOpenScreen} />
         ) : (
           messages.map((msg, idx) => (
             <MessageBubble
@@ -344,15 +345,12 @@ export function ChatPanel({ conversation }: ChatPanelProps) {
 }
 
 /* ─── Welcome Screen ─── */
-function WelcomeScreen() {
-  const locale = useSettingsStore((s) => s.settings.locale);
+interface WelcomeScreenProps {
+  onOpenScreen?: () => void;
+}
 
-  const quickActions = [
-    { icon: "📁", text: t("chat.welcome.findDocs", locale) },
-    { icon: "📋", text: t("chat.welcome.readClipboard", locale) },
-    { icon: "🔧", text: t("chat.welcome.runCmd", locale) },
-    { icon: "💬", text: t("chat.welcome.justChat", locale) },
-  ];
+function WelcomeScreen({ onOpenScreen }: WelcomeScreenProps) {
+  const locale = useSettingsStore((s) => s.settings.locale);
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 text-center animate-fade-in">
@@ -402,37 +400,58 @@ function WelcomeScreen() {
         {t("chat.welcome.desc", locale)}
       </p>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-2.5 w-full max-w-[300px]">
-        {quickActions.map((item, i) => (
-          <button
-            key={item.text}
-            className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-xs text-left transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
-            style={{
-              color: "var(--text-secondary)",
-              background: "var(--bg-tertiary)",
-              border: "1px solid var(--border)",
-              boxShadow: "var(--shadow-sm)",
-              animationDelay: `${i * 60}ms`,
-              animation: `fadeIn 0.4s ease-out ${i * 60}ms both`,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-light)";
-              e.currentTarget.style.boxShadow = "var(--shadow-md)";
-              e.currentTarget.style.color = "var(--text-primary)";
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.boxShadow = "var(--shadow-sm)";
-              e.currentTarget.style.color = "var(--text-secondary)";
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
-          >
-            <span className="text-base">{item.icon}</span>
-            <span className="font-medium">{item.text}</span>
-          </button>
-        ))}
+      {/* Dual Entry Cards */}
+      <div className="grid grid-cols-2 gap-3 w-full max-w-[320px]">
+        {/* Chat Card */}
+        <button
+          className="flex flex-col items-center gap-2.5 px-4 py-5 rounded-2xl text-xs transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
+          style={{
+            color: "var(--text-secondary)",
+            background: "var(--bg-tertiary)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-sm)",
+            animation: `fadeIn 0.4s ease-out 0ms both`,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "var(--border-light)";
+            e.currentTarget.style.boxShadow = "var(--shadow-md)";
+            e.currentTarget.style.color = "var(--text-primary)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+            e.currentTarget.style.color = "var(--text-secondary)";
+          }}
+        >
+          <span className="text-2xl">💬</span>
+          <span className="font-semibold text-sm">{t("chat.welcome.justChat", locale)}</span>
+        </button>
+
+        {/* Screen Capture Card */}
+        <button
+          onClick={onOpenScreen}
+          className="flex flex-col items-center gap-2.5 px-4 py-5 rounded-2xl text-xs transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
+          style={{
+            color: "var(--text-secondary)",
+            background: "linear-gradient(135deg, rgba(6, 182, 212, 0.06), rgba(6, 182, 212, 0.02))",
+            border: "1px solid rgba(6, 182, 212, 0.15)",
+            boxShadow: "0 2px 12px rgba(6, 182, 212, 0.06)",
+            animation: `fadeIn 0.4s ease-out 80ms both`,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "rgba(6, 182, 212, 0.3)";
+            e.currentTarget.style.boxShadow = "0 4px 20px rgba(6, 182, 212, 0.15)";
+            e.currentTarget.style.color = "var(--text-primary)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "rgba(6, 182, 212, 0.15)";
+            e.currentTarget.style.boxShadow = "0 2px 12px rgba(6, 182, 212, 0.06)";
+            e.currentTarget.style.color = "var(--text-secondary)";
+          }}
+        >
+          <Camera className="w-6 h-6" style={{ color: "var(--accent)" }} />
+          <span className="font-semibold text-sm">{t("screen.capture")}</span>
+        </button>
       </div>
 
       {/* Footer */}

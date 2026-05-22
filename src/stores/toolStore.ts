@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type MainView = "chat" | "filesearch" | "clipboard" | "terminal" | "snippets";
+export type MainView = "chat" | "screen" | "filesearch" | "clipboard" | "terminal" | "snippets";
 
 export interface ClipboardEntry {
   id: string;

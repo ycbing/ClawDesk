@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { TitleBar } from "./components/layout/TitleBar";
 import { Sidebar } from "./components/layout/Sidebar";
 import { ChatPanel } from "./components/chat/ChatPanel";
+import { ScreenPanel } from "./components/screen/ScreenPanel";
 import { SettingsPanel } from "./components/settings/SettingsPanel";
 import { FileSearch } from "./components/tools/FileSearch";
 import { ClipboardPanel } from "./components/tools/ClipboardPanel";
@@ -12,6 +13,7 @@ import { CommandPalette } from "./components/command/CommandPalette";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useChatStore } from "./stores/chatStore";
 import { useToolStore } from "./stores/toolStore";
+import { useScreenStore } from "./stores/screenStore";
 import { MainView } from "./stores/toolStore";
 
 type View = "chat" | "settings" | MainView;
@@ -21,6 +23,7 @@ export default function App() {
   const [showPalette, setShowPalette] = useState(false);
   const { conversations, activeConversationId, addMessage } = useChatStore();
   const { mainView, setMainView } = useToolStore();
+  const { setViewMode } = useScreenStore();
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
 
   // Sync mainView from toolStore into the combined view
@@ -37,16 +40,22 @@ export default function App() {
   }, []);
 
   // Ctrl+K / Cmd+K for command palette
+  // Ctrl+Shift+S for screen capture
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setShowPalette((prev) => !prev);
       }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        setMainView("screen");
+        setViewMode("capture");
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [setMainView, setViewMode]);
 
   // Window size memory (save to localStorage)
   useEffect(() => {
@@ -81,6 +90,11 @@ export default function App() {
     useChatStore.getState().createConversation();
   }, [setMainView]);
 
+  const handleOpenScreen = useCallback(() => {
+    setMainView("screen");
+    setViewMode("capture");
+  }, [setMainView, setViewMode]);
+
   const handleOpenSettings = useCallback(() => {
     setView("settings");
   }, []);
@@ -114,7 +128,9 @@ export default function App() {
           style={{ background: "var(--bg-primary)" }}
         >
           <ErrorBoundary>
-            {effectiveView === "settings" ? (
+            {effectiveView === "screen" ? (
+              <ScreenPanel />
+            ) : effectiveView === "settings" ? (
               <div className="animate-fade-in h-full">
                 <SettingsPanel onBack={() => setView("chat")} />
               </div>
@@ -127,7 +143,7 @@ export default function App() {
             ) : effectiveView === "snippets" ? (
               <SnippetsPanel />
             ) : (
-              <ChatPanel conversation={activeConversation} />
+              <ChatPanel conversation={activeConversation} onOpenScreen={handleOpenScreen} />
             )}
           </ErrorBoundary>
         </div>

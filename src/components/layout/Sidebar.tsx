@@ -1,4 +1,4 @@
-import { MessageSquarePlus, Settings, Trash2, MessageCircle, FolderOpen, Clipboard, Terminal } from "lucide-react";
+import { MessageSquarePlus, Settings, Trash2, MessageCircle, FolderOpen, Clipboard, Terminal, Camera } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
 import { useToolStore, MainView } from "../../stores/toolStore";
 import { t } from "../../lib/i18n";
@@ -9,6 +9,7 @@ interface SidebarProps {
 }
 
 const toolButtons: { view: MainView; icon: typeof FolderOpen; labelKey: string }[] = [
+  { view: "screen", icon: Camera, labelKey: "tools.screen" },
   { view: "filesearch", icon: FolderOpen, labelKey: "tools.files" },
   { view: "clipboard", icon: Clipboard, labelKey: "tools.clipboard" },
   { view: "terminal", icon: Terminal, labelKey: "tools.terminal" },

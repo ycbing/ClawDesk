@@ -10,10 +10,12 @@ import {
   Code,
   Moon,
   Sun,
+  Camera,
 } from "lucide-react";
 import { useToolStore, MainView } from "../../stores/toolStore";
 import { useChatStore } from "../../stores/chatStore";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useScreenStore } from "../../stores/screenStore";
 import { t } from "../../lib/i18n";
 
 interface CommandItem {
@@ -40,6 +42,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
   const listRef = useRef<HTMLDivElement>(null);
   const { setMainView } = useToolStore();
   const { clearMessages, activeConversationId } = useChatStore();
+  const { setViewMode } = useScreenStore();
   const { settings, updateSettings } = useSettingsStore();
 
   const commands = useMemo<CommandItem[]>(() => [
@@ -86,6 +89,15 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
       action: () => { setMainView("terminal"); onClose(); },
     },
     {
+      id: "screen-capture",
+      label: t("palette.commands.screen"),
+      description: "Capture screenshot and analyze with AI",
+      icon: <Camera className="w-4 h-4" />,
+      category: "Tools",
+      shortcut: t("palette.shortcuts.screen"),
+      action: () => { setMainView("screen"); setViewMode("capture"); onClose(); },
+    },
+    {
       id: "snippets",
       label: t("palette.commands.snippets"),
       description: "Manage code and text snippets",
@@ -115,7 +127,7 @@ export function CommandPalette({ isOpen, onClose, onNewChat, onOpenSettings }: C
         onClose();
       },
     },
-  ], [setMainView, onNewChat, onOpenSettings, clearMessages, activeConversationId, settings.theme, updateSettings]);
+  ], [setMainView, onNewChat, onOpenSettings, clearMessages, activeConversationId, settings.theme, updateSettings, setViewMode]);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return commands;
